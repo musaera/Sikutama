@@ -15,6 +15,7 @@ Route::get('/', function () {
 Route::get('/kunjungan/create', [KunjunganController::class, 'create'])->name('kunjungan.create');
 Route::post('/kunjungan', [KunjunganController::class, 'store'])->name('kunjungan.store');
 Route::get('/kunjungan/success', [KunjunganController::class, 'success'])->name('kunjungan.success');
+Route::get('welcome', [HomeController::class, 'welcome'])->name('welcome');
 
 // Authentication routes
 Auth::routes(['register' => false]);

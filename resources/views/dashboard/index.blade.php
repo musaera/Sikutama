@@ -127,7 +127,7 @@
                                         @forelse ($kunjungan as $k)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
+                                                {{-- <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-10 w-10">
                                                         @if ($k->foto_tamu)
                                                         <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $k->foto_tamu) }}" alt="{{ $k->nama_tamu }}">
@@ -138,7 +138,7 @@
                                                             </svg>
                                                         </div>
                                                         @endif
-                                                    </div>
+                                                    </div> --}}
                                                     <div class="ml-4">
                                                         <div class="text-sm font-medium text-gray-900">
                                                             {{ $k->nama_tamu }}

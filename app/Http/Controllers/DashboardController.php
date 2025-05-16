@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+// use Barryvdh\DomPDF\PDF;
 use App\Models\Kunjungan;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
@@ -84,13 +86,12 @@ class DashboardController extends Controller
      */
     public function export(Request $request)
     {
-        $format = $request->format ?? 'csv';
+        $format = $request->input('format', 'csv');
         $query = Kunjungan::query();
 
-        // Apply filters if any
+        // Filter data
         if ($request->has('filter')) {
             $filter = $request->filter;
-
             if ($filter == 'today') {
                 $query->whereDate('waktu_masuk', Carbon::today());
             } elseif ($filter == 'week') {
@@ -100,56 +101,72 @@ class DashboardController extends Controller
             }
         }
 
+        // Pencarian keyword (optional)
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_tamu', 'like', "%$search%")
+                    ->orWhere('instansi', 'like', "%$search%")
+                    ->orWhere('tujuan_kunjungan', 'like', "%$search%");
+            });
+        }
+
         $kunjungan = $query->orderBy('created_at', 'desc')->get();
 
-        if ($format == 'json') {
+        // Export JSON (opsional)
+        if ($format === 'json') {
             return response()->json($kunjungan);
-        } else {
-            // Generate CSV
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="kunjungan_export_' . date('Y-m-d') . '.csv"',
-            ];
-
-            $callback = function () use ($kunjungan) {
-                $file = fopen('php://output', 'w');
-
-                // Add CSV header
-                fputcsv($file, [
-                    'ID',
-                    'Nama Tamu',
-                    'Instansi',
-                    'Nomor Telepon',
-                    'Email',
-                    'Tujuan Kunjungan',
-                    'Bertemu Dengan',
-                    'Waktu Masuk',
-                    'Waktu Keluar',
-                    'Created At',
-                    'Updated At'
-                ]);
-
-                // Add data rows
-                foreach ($kunjungan as $k) {
-                    fputcsv($file, [
-                        $k->id,
-                        $k->nama_tamu,
-                        $k->instansi,
-                        $k->nomor_telepon,
-                        $k->email,
-                        $k->tujuan_kunjungan,
-                        $k->bertemu_dengan,
-                        $k->waktu_masuk ? $k->waktu_masuk->format('Y-m-d H:i:s') : '',
-                        $k->waktu_keluar ? $k->waktu_keluar->format('Y-m-d H:i:s') : '',
-                        $k->created_at->format('Y-m-d H:i:s'),
-                        $k->updated_at->format('Y-m-d H:i:s')
-                    ]);
-                }
-
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
         }
+
+        // Export PDF
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('exports.kunjungan_pdf', compact('kunjungan'));
+            return $pdf->download('kunjungan_export_' . date('Y-m-d') . '.pdf');
+        }
+
+        // Export CSV
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="kunjungan_export_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($kunjungan) {
+            $file = fopen('php://output', 'w');
+
+            // CSV Header
+            fputcsv($file, [
+                'ID',
+                'Nama Tamu',
+                'Instansi',
+                'Nomor Telepon',
+                'Email',
+                'Tujuan Kunjungan',
+                'Bertemu Dengan',
+                'Waktu Masuk',
+                'Waktu Keluar',
+                'Created At',
+                'Updated At'
+            ]);
+
+            foreach ($kunjungan as $k) {
+                fputcsv($file, [
+                    $k->id,
+                    $k->nama_tamu,
+                    $k->instansi,
+                    $k->nomor_telepon,
+                    $k->email,
+                    $k->tujuan_kunjungan,
+                    $k->bertemu_dengan,
+                    $k->waktu_masuk ? $k->waktu_masuk->format('Y-m-d H:i:s') : '',
+                    $k->waktu_keluar ? $k->waktu_keluar->format('Y-m-d H:i:s') : '',
+                    $k->created_at->format('Y-m-d H:i:s'),
+                    $k->updated_at->format('Y-m-d H:i:s')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

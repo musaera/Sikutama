@@ -125,18 +125,18 @@
                             @endif
                         </dd>
                     </div>
-                    @if ($kunjungan->foto_tamu)
+                    {{-- @if ($kunjungan->foto_tamu)
                     <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">
                             Foto Tamu
                         </dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                             <div class="border rounded-md overflow-hidden w-full max-w-xs">
-                                <img src="{{ asset('storage/' . $kunjungan->foto_tamu) }}" alt="Foto tamu" class="w-full h-auto">
+                                <img src="{{ asset('storage/public/uploads/' . $kunjungan->foto_tamu) }}" alt="Foto tamu" class="w-full h-auto">
                             </div>
                         </dd>
                     </div>
-                    @endif
+                    @endif --}}
                 </dl>
             </div>
         </div>

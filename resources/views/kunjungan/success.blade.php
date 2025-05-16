@@ -19,7 +19,7 @@
             </p>
 
             <div class="space-y-4">
-                <a href="{{ route('home') }}"
+                <a href="{{ route('welcome') }}"
                     class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                     Kembali ke Beranda
                 </a>
